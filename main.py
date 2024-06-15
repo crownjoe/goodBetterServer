@@ -58,9 +58,9 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(User.user_id == user.user_id).first()
     if db_user:
         if db_user.user_id == 'yellow':
-            return 0
+            return {"value": 0}
         else : #green
-            return 1
+            return {"value": 1}
     else:
         raise HTTPException(status_code = 400, detail = "유효하지 않는 사용자입니다.")
 
