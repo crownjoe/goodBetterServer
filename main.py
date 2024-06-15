@@ -52,6 +52,7 @@ def init_db():
 def on_startup():
     init_db()
 
+# 유저 코드 입력해서 로그인
 @app.post("/login")
 def login(user: UserLogin, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(User.user_id == user.user_id).first()
@@ -62,18 +63,20 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
             return 1
     else:
         raise HTTPException(status_code = 400, detail = "유효하지 않는 사용자입니다.")
-    
+
+# 사진 일기 작성 완료 & 커뮤니티 연결
 @app.post("/finish", response_model=List[CommunityRequestData])
 def receive_and_return_all_data(request_data: CommunityRequestData):
     data_store.append(request_data)
     return data_store
 
+# 커뮤니티 조회
 @app.post("/search", response_model=List[CommunityRequestData])
 def receive_and_return_all_data():
     return data_store
 
-
-@app.post("/writeComment", response_model=List[CommentRequestData])  # 댓글 입력 & 해당 게시글 댓글 반환
+# 댓글 작성 & 해당 게시글 댓글들 모두 반환
+@app.post("/writeComment", response_model=List[CommentRequestData]) 
 def add_comment(comment_data: CommentRequestData):
 
     item_id = comment_data.item_id
@@ -85,7 +88,8 @@ def add_comment(comment_data: CommentRequestData):
 
     return comment_store[item_id]
 
-@app.post("/searchComment", response_model=List[CommentRequestData])  # 댓글 검색 -> 댓글 반환
+# 댓글 전체 조회
+@app.post("/searchComment", response_model=List[str])  
 def search_comments(comment_data: searchCommentRequestData):
 
     item_id = comment_data.item_id
@@ -93,33 +97,8 @@ def search_comments(comment_data: searchCommentRequestData):
     if item_id not in comment_store:
         raise HTTPException(status_code=404, detail="Item not found")
     
-    # item_id에 해당하는 댓글만 반환
     comments = [comment.comment for comment in comment_store[item_id]]
     return comments
-
-
-
-# @app.post("/searchComment", response_model=List[searchCommentRequestData])
-# def search_comments(comment_data: searchCommentRequestData):
-
-# comment_store의 item_id와 searchCommentRequestData의 item_id이 같을 때 
-# comment_store[item_id]의 comment를 모두 불러와서 리스트로 전달
-
-    # if  comment_store == comment_data.item_id:
-    #     return comment_data
-
-    # item_id = comment_data.item_id
-    # return comment_store[item_id]
-
-# @app.get("/comment/{item_id}", response_model=List[CommentRequestData])  # 댓글 조회 -> 댓글 반환
-# def get_comments(item_id: str):
-
-#     if item_id not in comment_store:
-#         raise HTTPException(status_code=404, detail="Item not found")
-    
-#     # item_id에 해당하는 댓글만 반환
-#     return comment_store[item_id]
-
 
 
 # 서버 초기화
